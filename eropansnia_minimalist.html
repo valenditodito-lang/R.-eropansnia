@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>R. Eropansnia</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Roboto+Serif:wght@400;500&display=swap');
+
+    :root {
+      --bg: #0e0e0e;
+      --text: #f1f1f1;
+      --accent: #666;
+      --border: #222;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto Serif', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      margin-top: 10px;
+      font-size: 2.2em;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4em;
+      margin-top: 5px;
+      color: var(--accent);
+    }
+
+    section {
+      width: 90%;
+      max-width: 900px;
+      margin-bottom: 50px;
+    }
+
+    .editable {
+      background: transparent;
+      border: 1px dashed var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      min-height: 100px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .editable:focus {
+      border-color: var(--accent);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .gallery img {
+      width: 100%;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .controls {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    button {
+      background: var(--accent);
+      color: var(--text);
+      border: none;
+      padding: 8px 15px;
+      margin: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #888;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 15px;
+      text-align: center;
+      color: var(--accent);
+      width: 100%;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img id="logo" src="" alt="Logo Eropansnia" title="Klik untuk ganti logo">
+    <h1>Republik Eropansnia</h1>
+    <h2>Negara Fiksi Modern & Berdaulat</h2>
+  </header>
+
+  <section>
+    <h2>Deskripsi Negara</h2>
+    <div id="desc" class="editable" contenteditable="true">Eropansnia adalah negara fiksi yang berlandaskan semangat kemajuan, kedamaian, dan inovasi. Klik di sini untuk menulis deskripsi versimu sendiri.</div>
+  </section>
+
+  <section>
+    <h2>Galeri Nasional</h2>
+    <div class="gallery" id="gallery"></div>
+    <div class="controls">
+      <button id="addImage">Tambah Gambar</button>
+      <button id="clearGallery">Hapus Semua</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Kontak & Komunitas</h2>
+    <div class="controls">
+      <button onclick="window.open('https://discord.com', '_blank')">Discord</button>
+      <button onclick="window.open('https://instagram.com', '_blank')">Instagram</button>
+      <button onclick="window.open('mailto:info@eropansnia.gov', '_blank')">Email</button>
+    </div>
+  </section>
+
+  <footer>
+    &copy; <span id="year"></span> Republik Eropansnia. Semua hak dilindungi.
+  </footer>
+
+  <script>
+    const logo = document.getElementById('logo');
+    const desc = document.getElementById('desc');
+    const gallery = document.getElementById('gallery');
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // LocalStorage load
+    window.onload = () => {
+      const savedLogo = localStorage.getItem('logo');
+      const savedDesc = localStorage.getItem('desc');
+      const savedGallery = JSON.parse(localStorage.getItem('gallery') || '[]');
+
+      if (savedLogo) logo.src = savedLogo;
+      else logo.src = 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg';
+
+      if (savedDesc) desc.innerHTML = savedDesc;
+      savedGallery.forEach(url => addImageToGallery(url));
+    };
+
+    // Save deskripsi otomatis
+    desc.addEventListener('input', () => {
+      localStorage.setItem('desc', desc.innerHTML);
+    });
+
+    // Ganti logo
+    logo.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          logo.src = reader.result;
+          localStorage.setItem('logo', reader.result);
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    });
+
+    // Tambah gambar ke galeri
+    document.getElementById('addImage').addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          addImageToGallery(reader.result);
+          saveGallery();
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    });
+
+    // Fungsi menambah gambar
+    function addImageToGallery(url) {
+      const img = document.createElement('img');
+      img.src = url;
+      gallery.appendChild(img);
+    }
+
+    // Simpan galeri
+    function saveGallery() {
+      const images = Array.from(gallery.querySelectorAll('img')).map(img => img.src);
+      localStorage.setItem('gallery', JSON.stringify(images));
+    }
+
+    // Hapus semua gambar
+    document.getElementById('clearGallery').addEventListener('click', () => {
+      if (confirm('Yakin hapus semua gambar galeri?')) {
+        gallery.innerHTML = '';
+        localStorage.removeItem('gallery');
+      }
+    });
+  </script>
+</body>
+</html>
